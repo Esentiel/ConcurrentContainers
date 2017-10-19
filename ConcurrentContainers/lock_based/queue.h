@@ -1,8 +1,7 @@
 #pragma once
 
 #include <queue>
-#include <thread>
-#include <condition_variable>
+#include <mutex>
 #include <memory>
 
 
@@ -35,7 +34,7 @@ public:
 	{
 		std::unique_lock<std::mutex> lk(mut_);
 		data_cond_.wait(lk, [this] {return !queue_data_.empty()});
-		auto res = std::make_shared<T>(std::move(queue_data_.front()));
+		auto res (std::make_shared<T>(std::move(queue_data_.front())));
 		queue_data_.pop();
 
 		return res;
@@ -57,9 +56,9 @@ public:
 	{
 		std::lock_guard<std::mutex> lk(mut_);
 		if (queue_data_.empty())
-			return nullptr;
+			return std::shared_ptr<T>();
 
-		auto res = std::make_shared<T>(std::move(queue_data_.front()));
+		auto res (std::make_shared<T>(std::move(queue_data_.front())));
 		queue_data_.pop();
 
 		return res;
